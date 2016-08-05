@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <style type="text/css">
+    * {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      border: 0;
+    }
+
+    .all {
+      width: 500px;
+      height: 200px;
+      padding: 7px;
+      border: 1px solid #ccc;
+      margin: 100px auto;
+      position: relative;
+    }
+
+    .screen {
+      width: 500px;
+      height: 200px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .screen li {
+      width: 500px;
+      height: 200px;
+      overflow: hidden;
+      float: left;
+    }
+
+    .screen ul {
+      position: absolute;
+      left: 0;
+      top: 0px;
+      width: 3000px;
+    }
+
+    .all ol {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    .all ol li {
+      float: left;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .all ol li.current {
+      background: yellow;
+    }
+
+    #arr {
+      display: none;
+    }
+
+    #arr span {
+      width: 40px;
+      height: 40px;
+      position: absolute;
+      left: 5px;
+      top: 50%;
+      margin-top: -20px;
+      background: #000;
+      cursor: pointer;
+      line-height: 40px;
+      text-align: center;
+      font-weight: bold;
+      font-family: '黑体';
+      font-size: 30px;
+      color: #fff;
+      opacity: 0.3;
+      border: 1px solid #fff;
+    }
+
+    #arr #right {
+      right: 5px;
+      left: auto;
+    }
+  </style>
+</head>
+<body>
+<div class="all" id='box'>
+  <div class="screen">
+    <ul>
+      <li><img src="images/1.jpg" width="500" height="200"/></li>
+      <li><img src="images/2.jpg" width="500" height="200"/></li>
+      <li><img src="images/3.jpg" width="500" height="200"/></li>
+      <li><img src="images/4.jpg" width="500" height="200"/></li>
+      <li><img src="images/5.jpg" width="500" height="200"/></li>
+    </ul>
+    <ol>
+    </ol>
+  </div>
+  <div id="arr"><span id="left">&lt;</span><span id="right">&gt;</span></div>
+</div>
+</body>
+<script src="./jquery-1.12.2.js"></script>
+<script>
+  $(function () {
+    //鼠标进去盒子 显示箭头 离开隐藏
+    $("#box").mouseenter(function () {
+      $("#arr").fadeIn();
+      //图片停止轮播
+      clearInterval(timer);
+    });
+    $("#box").mouseleave(function () {
+      $("#arr").fadeOut();
+      //图片轮播
+      timer = setInterval(play, 1500);
+    });
+    //ol中添加 小按钮
+    var length = $("#box ul>li").length;//图片的个数
+    for (var i = 0; i < length; i++) {
+      $("#box>.screen>ol").append("<li></li>");
+    }
+    $("#box ol>li").eq(0).addClass("current");
+    //ul后追加一张与第一张一样的图片
+    var imgAdd = $("#box ul li:eq(0)").clone(true);
+    $("#box ul").append(imgAdd);
+    //鼠标点击按钮 按钮变色  相应的图片显示
+    var imgW = $(".screen").width();//图片宽度
+    $("#box ol>li").click(function () {
+      $(this).addClass("current").siblings().removeClass("current");
+      var index = $(this).index();
+      $("#box ul").animate({
+        "left": -index * imgW
+      }, 500);
+      cli = index;//索引和点击次数同步
+    });
+
+    //点击箭头 图片轮换
+    var cli = 0;//点击次数
+    var flag = 1;//节流阀
+    $("#left").click(function () {
+      if (flag) {
+        flag = 0;
+        if (cli == 0) {
+          $("#box ul").css("left", -length * imgW);
+          cli = length;
+        }
+        cli--;
+        $("#box ul").animate({
+          "left": -cli * imgW
+        }, 500, function () {
+          flag = 1;
+          //相应的按钮变色
+          $("#box ol>li").eq(cli).addClass("current").siblings().removeClass("current");
+        });
+
+      }
+
+    });
+    $("#right").click(function () {
+      play();
+    });
+
+    //图片自动轮播
+    var timer = setInterval(play, 1500);
+    //点击右箭头 封装成函数
+    function play() {
+      if (flag) {
+        flag = 0;
+        cli++;
+        //相应的按钮变色
+        if (cli == length) {
+          $("#box ol>li").eq(0).addClass("current").siblings().removeClass("current");
+          $("#box ul").animate({
+            "left": -cli * imgW
+          }, 500, function () {
+            //轮播图最后一张动画结束时 切换到第一张(第一张和最后一张相同)
+            $("#box ul").css("left", 0);
+            cli = 0
+            flag = 1;
+          });
+        } else {
+          $("#box ol>li").eq(cli).addClass("current").siblings().removeClass("current");
+          $("#box ul").animate({
+            "left": -cli * imgW
+          }, 500, function () {
+            flag = 1;
+          });
+        }
+      }
+
+
+    }
+  })
+  ;
+</script>
+</html>
