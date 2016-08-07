@@ -111,94 +111,103 @@
 <script src="./jquery-1.12.2.js"></script>
 <script>
   $(function () {
-    //鼠标进去盒子 显示箭头 离开隐藏
-    $("#box").mouseenter(function () {
-      $("#arr").fadeIn();
-      //图片停止轮播
-      clearInterval(timer);
-    });
-    $("#box").mouseleave(function () {
-      $("#arr").fadeOut();
-      //图片轮播
-      timer = setInterval(play, 1500);
-    });
-    //ol中添加 小按钮
-    var length = $("#box ul>li").length;//图片的个数
-    for (var i = 0; i < length; i++) {
-      $("#box>.screen>ol").append("<li></li>");
-    }
-    $("#box ol>li").eq(0).addClass("current");
-    //ul后追加一张与第一张一样的图片
-    var imgAdd = $("#box ul li:eq(0)").clone(true);
-    $("#box ul").append(imgAdd);
-    //鼠标点击按钮 按钮变色  相应的图片显示
-    var imgW = $(".screen").width();//图片宽度
-    $("#box ol>li").click(function () {
-      $(this).addClass("current").siblings().removeClass("current");
-      var index = $(this).index();
-      $("#box ul").animate({
-        "left": -index * imgW
-      }, 500);
-      cli = index;//索引和点击次数同步
-    });
-
-    //点击箭头 图片轮换
-    var cli = 0;//点击次数
-    var flag = 1;//节流阀
-    $("#left").click(function () {
-      if (flag) {
-        flag = 0;
-        if (cli == 0) {
-          $("#box ul").css("left", -length * imgW);
-          cli = length;
-        }
-        cli--;
+    carousel({
+      autoplay: true,
+      interval: 400,
+      loop: 1500
+    })
+//轮播图插件
+    function carousel(config) {
+      config.interval = config.interval || 500;
+      config.loop = config.loop || 1500;
+      config.autoplay = config.autoplay === false ? false : true;
+      var timer;
+      //鼠标进去盒子 显示箭头 离开隐藏
+      $("#box").mouseenter(function () {
+        $("#arr").fadeIn();
+        //图片停止轮播
+        if (config.autoplay) clearInterval(timer);
+      });
+      $("#box").mouseleave(function () {
+        $("#arr").fadeOut();
+        //图片轮播
+        if (config.autoplay) timer = setInterval(play, config.loop);
+      });
+      //ol中添加 小按钮
+      var length = $("#box ul>li").length;//图片的个数
+      for (var i = 0; i < length; i++) {
+        $("#box>.screen>ol").append("<li></li>");
+      }
+      $("#box ol>li").eq(0).addClass("current");
+      //ul后追加一张与第一张一样的图片
+      var imgAdd = $("#box ul li:eq(0)").clone(true);
+      $("#box ul").append(imgAdd);
+      //鼠标点击按钮 按钮变色  相应的图片显示
+      var imgW = $(".screen").width();//图片宽度
+      $("#box ol>li").click(function () {
+        $(this).addClass("current").siblings().removeClass("current");
+        var index = $(this).index();
         $("#box ul").animate({
-          "left": -cli * imgW
-        }, 500, function () {
-          flag = 1;
+          "left": -index * imgW
+        }, config.interval);
+        cli = index;//索引和点击次数同步
+      });
+
+      //点击箭头 图片轮换
+      var cli = 0;//点击次数
+      var flag = 1;//节流阀
+      $("#left").click(function () {
+        if (flag) {
+          flag = 0;
+          if (cli == 0) {
+            $("#box ul").css("left", -length * imgW);
+            cli = length;
+          }
+          cli--;
+          $("#box ul").animate({
+            "left": -cli * imgW
+          }, config.interval, function () {
+            flag = 1;
+            //相应的按钮变色
+            $("#box ol>li").eq(cli).addClass("current").siblings().removeClass("current");
+          });
+
+        }
+
+      });
+      $("#right").click(function () {
+        play();
+      });
+
+      //图片自动轮播
+      if (config.autoplay) timer = setInterval(play, config.loop);
+      //点击右箭头 封装成函数
+      function play() {
+        if (flag) {
+          flag = 0;
+          cli++;
           //相应的按钮变色
-          $("#box ol>li").eq(cli).addClass("current").siblings().removeClass("current");
-        });
-
-      }
-
-    });
-    $("#right").click(function () {
-      play();
-    });
-
-    //图片自动轮播
-    var timer = setInterval(play, 1500);
-    //点击右箭头 封装成函数
-    function play() {
-      if (flag) {
-        flag = 0;
-        cli++;
-        //相应的按钮变色
-        if (cli == length) {
-          $("#box ol>li").eq(0).addClass("current").siblings().removeClass("current");
-          $("#box ul").animate({
-            "left": -cli * imgW
-          }, 500, function () {
-            //轮播图最后一张动画结束时 切换到第一张(第一张和最后一张相同)
-            $("#box ul").css("left", 0);
-            cli = 0
-            flag = 1;
-          });
-        } else {
-          $("#box ol>li").eq(cli).addClass("current").siblings().removeClass("current");
-          $("#box ul").animate({
-            "left": -cli * imgW
-          }, 500, function () {
-            flag = 1;
-          });
+          if (cli == length) {
+            $("#box ol>li").eq(0).addClass("current").siblings().removeClass("current");
+            $("#box ul").animate({
+              "left": -cli * imgW
+            }, config.interval, function () {
+              //轮播图最后一张动画结束时 切换到第一张(第一张和最后一张相同)
+              $("#box ul").css("left", 0);
+              cli = 0
+              flag = 1;
+            });
+          } else {
+            $("#box ol>li").eq(cli).addClass("current").siblings().removeClass("current");
+            $("#box ul").animate({
+              "left": -cli * imgW
+            }, config.interval, function () {
+              flag = 1;
+            });
+          }
         }
       }
-
-
     }
-  })
-  ;
+  });
 </script>
 </html>
